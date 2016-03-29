@@ -36,14 +36,18 @@ plotSpecificCluster <- function(clustAndCol) {
   rangeOfCluster <- range(relevantData)
   elementsInCluster <- dim(relevantData)[1]
 
-  png(sprintf("cluster.%d.png", specificCluster))
+  dir.name <- sprintf("dir.cluster.%d.plots/", specificCluster)
+
+  dir.create(dir.name)
+
+  png(paste0(dir.name, sprintf("plot.cluster.%d.png", specificCluster)))
   limitsForVerticalPlot = c(rangeOfCluster[1], rangeOfCluster[2])
   plot(0, type = "n", main=sprintf("Cluster %d ; %d components", specificCluster, elementsInCluster), xlab = "", ylab = "", xlim = c(1,4), ylim = limitsForVerticalPlot)
   par(new=T)
   lapply(relevanClusterIndices, plot.real, rangeOfCluster=rangeOfCluster, col=clustAndCol[[2]], limitsForVerticalPlot=limitsForVerticalPlot)
   dev.off()
 
-  png(sprintf("cluster.scaled.%d.png", specificCluster))
+  png(paste0(dir.name, sprintf("plot.cluster.scaled.%d.png", specificCluster)))
   limitsForVerticalPlot = c(0, 1)
   plot(0, type = "n", main=sprintf("Scaled cluster %d ; %d components", specificCluster, elementsInCluster), xlab = "", ylab = "", xlim = c(1,4), ylim = limitsForVerticalPlot)
   par(new=T)
