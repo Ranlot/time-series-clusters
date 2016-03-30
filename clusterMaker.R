@@ -2,6 +2,44 @@ library(amap)
 library(magrittr)
 library(parallel)
 
+#--------------------------------------------
+
+plot.single <- function(data, index, col, limitsForVerticalPlot) {
+  plot(1:4, data[index, ], lwd=2, type='o', xlab="", ylab="", col=col, xaxt='n', yaxt='n', ylim = limitsForVerticalPlot)
+  par(new=T)
+}
+
+#define a function closure for easier plotting
+plot.gen <- function(specificCluster, rangeOfCluster, elementsInCluster, relevanClusterIndices, col, dir.name) {
+  function(type, data) {
+    limitsForVerticalPlot <- if(type == 'Raw') c(rangeOfCluster[1], rangeOfCluster[2]) else c(0, 1)
+    png(paste0(dir.name, sprintf("%s.cluster.%d.png", type, specificCluster)))
+    plot(0, type = "n", main=sprintf("%s cluster %d ; %d components", type, specificCluster, elementsInCluster), xlab = "", ylab = "", xlim = c(1,4), ylim = limitsForVerticalPlot)
+    par(new=T)
+    lapply(relevanClusterIndices, plot.single, data=data, col=col, limitsForVerticalPlot=limitsForVerticalPlot)
+    dev.off()
+  }
+}
+
+plotSpecificCluster <- function(clustAndCol) {
+
+  specificCluster <- clustAndCol[[1]] %>% as.integer
+  col <- clustAndCol[[2]]
+
+  relevanClusterIndices <- clusters[clusters == specificCluster] %>% names %>% as.integer
+
+  rangeOfCluster <- df[relevanClusterIndices, ] %>% range
+  elementsInCluster <- length(relevanClusterIndices)
+
+  dir.name <- sprintf("dir.cluster.%d.plots/", specificCluster)
+  dir.create(dir.name)
+  general.plotter <- plot.gen(specificCluster, rangeOfCluster, elementsInCluster, relevanClusterIndices, col, dir.name)
+  general.plotter('Raw', df)
+  general.plotter('Scaled', scaled.df)
+}
+
+#--------------------------------------------
+
 dst.met <- "correlation" 
 met <- "average"
 Ncpu <- 16
@@ -19,45 +57,10 @@ numberOfClusters <- 20
 
 clusters <- cutree(hc, numberOfClusters)
 
-plot.real <- function(index, rangeOfCluster, col, limitsForVerticalPlot) {
-  plot(1:4, df[index, ], lwd=2, type='o', xlab="", ylab="", col=col, xaxt='n', yaxt='n', ylim = limitsForVerticalPlot)
-  par(new=T)
-}
-
-plot.scaled <- function(index, rangeOfCluster, col, limitsForVerticalPlot) {
-  plot(1:4, scaled.df[index, ], lwd=2, type='o', xlab="", ylab="", col=col, xaxt='n', yaxt='n', ylim = limitsForVerticalPlot)
-  par(new=T)
-}
-
-plotSpecificCluster <- function(clustAndCol) {
-  specificCluster <- clustAndCol[[1]] %>% as.integer
-  relevanClusterIndices <- clusters[clusters == specificCluster] %>% names %>% as.integer
-  relevantData <- df[relevanClusterIndices, ]
-  rangeOfCluster <- range(relevantData)
-  elementsInCluster <- dim(relevantData)[1]
-
-  dir.name <- sprintf("dir.cluster.%d.plots/", specificCluster)
-
-  dir.create(dir.name)
-
-  png(paste0(dir.name, sprintf("plot.cluster.%d.png", specificCluster)))
-  limitsForVerticalPlot = c(rangeOfCluster[1], rangeOfCluster[2])
-  plot(0, type = "n", main=sprintf("Cluster %d ; %d components", specificCluster, elementsInCluster), xlab = "", ylab = "", xlim = c(1,4), ylim = limitsForVerticalPlot)
-  par(new=T)
-  lapply(relevanClusterIndices, plot.real, rangeOfCluster=rangeOfCluster, col=clustAndCol[[2]], limitsForVerticalPlot=limitsForVerticalPlot)
-  dev.off()
-
-  png(paste0(dir.name, sprintf("plot.cluster.scaled.%d.png", specificCluster)))
-  limitsForVerticalPlot = c(0, 1)
-  plot(0, type = "n", main=sprintf("Scaled cluster %d ; %d components", specificCluster, elementsInCluster), xlab = "", ylab = "", xlim = c(1,4), ylim = limitsForVerticalPlot)
-  par(new=T)
-  lapply(relevanClusterIndices, plot.scaled, rangeOfCluster=rangeOfCluster, col=clustAndCol[[2]], limitsForVerticalPlot=limitsForVerticalPlot)
-  dev.off()
-}
-
 #color palette
 #http://tools.medialab.sciences-po.fr/iwanthue/
 
-#lapply(list(c(5, '#CC6D39'), c(10, '#7889C6'), c(15, '#6FAB4C'), c(20, '#CC5B9B')), plotSpecificCluster)
 #NAME THE LIST
 mclapply(list(c(5, '#CC6D39'), c(10, '#7889C6'), c(15, '#6FAB4C'), c(20, '#CC5B9B')), plotSpecificCluster, mc.cores=4)
+
+#--------------------------------------------
