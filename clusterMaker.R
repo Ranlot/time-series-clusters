@@ -4,6 +4,13 @@ library(parallel)
 
 #--------------------------------------------
 
+#custom zip function...
+zipper <- function(xsDescribe, xs, ysDescribe, ys) {
+  zippedArgs <- mapply(c, xs, ys)
+  row.names(zippedArgs) <- c(xsDescribe, ysDescribe)
+  do.call(c, apply(zippedArgs, 2, list))
+}
+
 plot.single <- function(data, index, col, limitsForVerticalPlot) {
   plot(1:4, data[index, ], lwd=2, type='o', xlab="", ylab="", col=col, xaxt='n', yaxt='n', ylim = limitsForVerticalPlot)
   par(new=T)
@@ -23,8 +30,11 @@ plot.gen <- function(specificCluster, rangeOfCluster, elementsInCluster, relevan
 
 plotSpecificCluster <- function(clustAndCol) {
 
-  specificCluster <- clustAndCol[[1]] %>% as.integer
-  col <- clustAndCol[[2]]
+  #specificCluster <- clustAndCol[[1]] %>% as.integer
+  #col <- clustAndCol[[2]]
+
+  specificCluster <- clustAndCol[["n"]] %>% as.integer
+  col <- clustAndCol[["col"]]
 
   relevanClusterIndices <- clusters[clusters == specificCluster] %>% names %>% as.integer
 
@@ -60,7 +70,8 @@ clusters <- cutree(hc, numberOfClusters)
 #color palette
 #http://tools.medialab.sciences-po.fr/iwanthue/
 
-#NAME THE LIST
-mclapply(list(c(5, '#CC6D39'), c(10, '#7889C6'), c(15, '#6FAB4C'), c(20, '#CC5B9B')), plotSpecificCluster, mc.cores=4)
+requiredClusters <- list(5, 10, 15, 20)
+colorPalette <- list('#CC6D39', '#7889C6', '#6FAB4C', '#CC5B9B')
 
+mclapply(zipper("n", requiredClusters, "col", colorPalette), plotSpecificCluster, mc.cores=4)
 #--------------------------------------------
