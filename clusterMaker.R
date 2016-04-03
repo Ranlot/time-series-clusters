@@ -30,9 +30,6 @@ plot.gen <- function(specificCluster, rangeOfCluster, elementsInCluster, relevan
 
 plotSpecificCluster <- function(clustAndCol) {
 
-  #specificCluster <- clustAndCol[[1]] %>% as.integer
-  #col <- clustAndCol[[2]]
-
   specificCluster <- clustAndCol[["n"]] %>% as.integer
   col <- clustAndCol[["col"]]
 
