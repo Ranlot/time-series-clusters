@@ -71,7 +71,5 @@ clusters <- cutree(hc, numberOfClusters)
 requiredClusters <- list(5, 10, 15, 20)
 colorPalette <- list('#CC6D39', '#7889C6', '#6FAB4C', '#CC5B9B')
 
-stopifnot(length(requiredClusters) == length(colorPalette))
-
 mclapply(zipper("n", requiredClusters, "col", colorPalette), plotSpecificCluster, mc.cores=4)
 #--------------------------------------------
