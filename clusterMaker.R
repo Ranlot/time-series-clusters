@@ -72,4 +72,18 @@ requiredClusters <- list(5, 10, 15, 20)
 colorPalette <- list('#CC6D39', '#7889C6', '#6FAB4C', '#CC5B9B')
 
 mclapply(zipper("n", requiredClusters, "col", colorPalette), plotSpecificCluster, mc.cores=4)
+
+#--------------------------------------------
+actualTimeSeriesIndex <- row.names(df) %>% sample(200) %>% as.integer
+
+numbOfNaiveSamples <- length(actualTimeSeriesIndex)
+naiveData <- df[actualTimeSeriesIndex, ]
+naiveRange <- naiveData %>% range
+limitsForVerticalPlot <- c(naiveRange[1], naiveRange[2])
+#--------------------------------------------
+png(paste0(sprintf("Naive.samples.png")))
+plot(0, type = "n", main=sprintf("Original %d samples", numbOfNaiveSamples), xlab = "", ylab = "", xlim = c(1,4), ylim = limitsForVerticalPlot)
+par(new=T)
+lapply(actualTimeSeriesIndex, plot.single, data=df, col='black', limitsForVerticalPlot=limitsForVerticalPlot)
+dev.off()
 #--------------------------------------------
